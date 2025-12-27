@@ -3,6 +3,7 @@ import type {
   SignInRequest,
   SignUpRequest,
   AuthResponse,
+  AuthUser,
 } from "@/types/auth.types";
 
 export const authApi = api.injectEndpoints({
@@ -34,7 +35,13 @@ export const authApi = api.injectEndpoints({
         },
       }),
     }),
+    getMe: builder.query<AuthUser, void>({
+      query: () => ({
+        url: "/users/me",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-export const { useSignInMutation, useSignUpMutation } = authApi;
+export const { useSignInMutation, useSignUpMutation, useGetMeQuery } = authApi;
