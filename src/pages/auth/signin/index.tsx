@@ -51,17 +51,19 @@ const SignIn = () => {
         showSnackbar({
           message: "Login successful",
           severity: "success",
+          context: "main",
         })
       );
 
       setTimeout(() => {
         navigate("/", { replace: true });
-      }, 4000);
+      }, 500);
     } catch (error: unknown) {
       dispatch(
         showSnackbar({
           message: getErrorMessage(error),
           severity: "error",
+          context: "auth",
         })
       );
     }

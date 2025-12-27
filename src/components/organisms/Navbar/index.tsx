@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   Box,
@@ -11,13 +11,10 @@ import {
   MenuItem,
   Drawer,
 } from "@mui/material";
-
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-
 import ArticleAppLogo from "@/assets/article-app.png";
 import Logo from "@/components/atoms/Logo";
-
 import {
   appBarSx,
   toolbarSx,
@@ -27,12 +24,34 @@ import {
 import { CTAButtonSx } from "@/theme/button.customize";
 import NavButton from "@/components/molecules/NavButton";
 import NavMenuItem from "@/components/molecules/NavMenuItem";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "@/store";
+import { logout } from "@/services/auth/auth.slice";
+import { showSnackbar } from "@/services/snackbar/snackbar.slice";
 
 export default function Navbar() {
-  const [open, setOpen] = React.useState(false);
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+
+  const [open, setOpen] = useState(false);
 
   const toggleDrawer = (value: boolean) => () => {
     setOpen(value);
+  };
+
+  const handleLogout = () => {
+    dispatch(
+      showSnackbar({
+        message: "Logged out successfully",
+        severity: "success",
+      })
+    );
+
+    setTimeout(() => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      dispatch(logout());
+    }, 1500);
   };
 
   return (
@@ -51,14 +70,24 @@ export default function Navbar() {
           </Box>
 
           <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1 }}>
-            <Button
-              component={NavLink}
-              to="/sign-in"
-              variant="contained"
-              sx={CTAButtonSx}
-            >
-              Sign in
-            </Button>
+            {isAuthenticated ? (
+              <Button
+                variant="contained"
+                onClick={handleLogout}
+                sx={CTAButtonSx}
+              >
+                Logout
+              </Button>
+            ) : (
+              <Button
+                component={NavLink}
+                to="/sign-in"
+                variant="contained"
+                sx={CTAButtonSx}
+              >
+                Sign in
+              </Button>
+            )}
           </Box>
 
           <Box sx={{ display: { xs: "flex", md: "none" } }}>
@@ -95,14 +124,24 @@ export default function Navbar() {
                   <Divider />
                 </Box>
                 <MenuItem>
-                  <Button
-                    component={NavLink}
-                    to="/sign-in"
-                    variant="contained"
-                    fullWidth
-                  >
-                    Sign in
-                  </Button>
+                  {isAuthenticated ? (
+                    <Button
+                      variant="contained"
+                      onClick={handleLogout}
+                      fullWidth
+                    >
+                      Logout
+                    </Button>
+                  ) : (
+                    <Button
+                      component={NavLink}
+                      to="/sign-in"
+                      variant="contained"
+                      fullWidth
+                    >
+                      Sign in
+                    </Button>
+                  )}
                 </MenuItem>
               </Box>
             </Drawer>

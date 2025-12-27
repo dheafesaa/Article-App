@@ -7,7 +7,7 @@ import { Outlet } from "react-router-dom";
 
 const AuthLayout = () => {
   const dispatch = useDispatch();
-  const { open, message, severity } = useSelector(
+  const { key, open, message, severity, context } = useSelector(
     (state: RootState) => state.snackbar
   );
 
@@ -20,12 +20,15 @@ const AuthLayout = () => {
       px={2}
     >
       <Outlet />
-      <Snackbar
-        open={open}
-        message={message}
-        severity={severity}
-        onClose={() => dispatch(hideSnackbar())}
-      />
+      {context === "auth" && (
+        <Snackbar
+          key={key}
+          open={open}
+          message={message}
+          severity={severity}
+          onClose={() => dispatch(hideSnackbar())}
+        />
+      )}
     </Box>
   );
 };
