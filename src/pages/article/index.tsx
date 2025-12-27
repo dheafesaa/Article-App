@@ -2,27 +2,37 @@ import Heading from "@/components/molecules/Heading";
 import RoundedPagination from "@/components/molecules/RoundedPagination";
 import { SearchInput } from "@/components/molecules/SearchInput";
 import ArticleList from "@/components/organisms/ArticleList";
-import { CircularProgress, Container, Stack } from "@mui/material";
-import { useEffect, useState } from "react";
+import { CircularProgress, Container, Stack, Typography } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
 import ArticleToolbar from "@/components/organisms/ArticleToolbar";
 import { useDispatch } from "react-redux";
 import { useGetArticlesQuery } from "@/services/article/article.api";
 import { showSnackbar } from "@/services/snackbar/snackbar.slice";
 import { getErrorMessage } from "@/utils/getErrorMessage";
 import { formatDate } from "@/utils/formatDate";
-
-const categories = [
-  { id: "all", label: "All Categories" },
-  { id: "villages", label: "Villages" },
-  { id: "bandung", label: "Travel Bandung" },
-  { id: "bogor", label: "Wisata Bogor" },
-];
+import { useGetCategoriesQuery } from "@/services/category/category.api";
 
 const Article = () => {
   const dispatch = useDispatch();
   const [query, setQuery] = useState("");
   const [active, setActive] = useState("all");
   const [page, setPage] = useState(1);
+
+  const {
+    data: categoryRes,
+    isError: categoryError,
+    error: categoryErr,
+  } = useGetCategoriesQuery();
+
+  const categories = useMemo(() => {
+    const apiCategories =
+      categoryRes?.data.map((c) => ({
+        id: c.documentId,
+        label: c.name,
+      })) ?? [];
+
+    return [{ id: "all", label: "All Categories" }, ...apiCategories];
+  }, [categoryRes?.data]);
 
   const { data, isLoading, isError, error } = useGetArticlesQuery(
     {
@@ -31,9 +41,7 @@ const Article = () => {
       search: query || undefined,
       category: active !== "all" ? active : undefined,
     },
-    {
-      refetchOnMountOrArgChange: true,
-    }
+    { refetchOnMountOrArgChange: true }
   );
 
   useEffect(() => {
@@ -46,8 +54,19 @@ const Article = () => {
         })
       );
     }
-  }, [isError, error, dispatch]);
 
+    if (categoryError && categoryErr) {
+      dispatch(
+        showSnackbar({
+          message: getErrorMessage(categoryErr),
+          severity: "error",
+          context: "main",
+        })
+      );
+    }
+  }, [isError, error, categoryError, categoryErr, dispatch]);
+
+  const items = data?.data ?? [];
   const pagination = data?.meta.pagination;
 
   return (
@@ -75,6 +94,13 @@ const Article = () => {
             setPage(1);
           }}
         />
+        {!isLoading && items.length === 0 && (
+          <Stack alignItems="center" py={6}>
+            <Typography>
+              No articles found. Try adjusting your search or category.
+            </Typography>
+          </Stack>
+        )}
         {isLoading ? (
           <Stack alignItems="center" py={6}>
             <CircularProgress />
@@ -93,7 +119,6 @@ const Article = () => {
             }
           />
         )}
-
         {pagination && pagination.pageCount > 1 && (
           <RoundedPagination
             page={pagination.page}

@@ -28,20 +28,31 @@ const ArticleToolbar = ({
 }: ArticleToolbarProps) => {
   return (
     <Box sx={articleToolbarSx}>
-      <CategoryTabs
-        categories={categories}
-        activeId={activeId}
-        onChange={onCategoryChange}
-      />
-      <Button
-        component={NavLink}
-        to={path}
-        variant="contained"
-        startIcon={<AddIcon />}
-        sx={articleButtonSx}
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          overflowX: "auto",
+          whiteSpace: "nowrap",
+        }}
       >
-        {labelButton}
-      </Button>
+        <CategoryTabs
+          categories={categories}
+          activeId={activeId}
+          onChange={onCategoryChange}
+        />
+      </Box>
+      <Box sx={{ flexShrink: 0 }}>
+        <Button
+          component={NavLink}
+          to={path}
+          variant="contained"
+          startIcon={<AddIcon />}
+          sx={articleButtonSx}
+        >
+          {labelButton}
+        </Button>
+      </Box>
     </Box>
   );
 };
