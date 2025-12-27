@@ -1,17 +1,22 @@
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
-export const getErrorMessage = (error: unknown): string => {
-  if (typeof error === "object" && error !== null && "status" in error) {
-    const fetchError = error as FetchBaseQueryError & {
-      error?: {
-        message?: string;
-      };
-    };
+interface ApiErrorResponse {
+  message?: string;
+}
 
-    if (fetchError.error?.message) {
-      return fetchError.error.message;
+export const getErrorMessage = (error: unknown): string => {
+  if (isFetchBaseQueryError(error)) {
+    const data = error.data as ApiErrorResponse | undefined;
+    if (data?.message) {
+      return data.message;
     }
   }
 
   return "Something went wrong. Please try again.";
+};
+
+const isFetchBaseQueryError = (
+  error: unknown
+): error is FetchBaseQueryError => {
+  return typeof error === "object" && error !== null && "status" in error;
 };

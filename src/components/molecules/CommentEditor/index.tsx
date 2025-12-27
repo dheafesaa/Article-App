@@ -5,12 +5,23 @@ import { articleButtonSx } from "@/theme/button.customize";
 
 interface Props {
   initialValue?: string;
+  loading?: boolean;
   onSubmit: (value: string) => void;
   onCancel?: () => void;
 }
 
-const CommentEditor = ({ initialValue = "", onSubmit, onCancel }: Props) => {
+const CommentEditor = ({
+  initialValue = "",
+  loading = false,
+  onSubmit,
+  onCancel,
+}: Props) => {
   const [value, setValue] = useState(initialValue);
+
+  const handleSubmit = () => {
+    onSubmit(value.trim());
+    setValue("");
+  };
 
   return (
     <Stack spacing={2}>
@@ -29,7 +40,8 @@ const CommentEditor = ({ initialValue = "", onSubmit, onCancel }: Props) => {
         <Button
           variant="contained"
           disabled={!value.trim()}
-          onClick={() => onSubmit(value.trim())}
+          loading={loading}
+          onClick={handleSubmit}
           sx={articleButtonSx}
         >
           Respond

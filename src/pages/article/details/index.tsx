@@ -2,37 +2,80 @@ import ArticleContent from "@/components/organisms/ArticleContent";
 import ArticleMeta from "@/components/organisms/ArticleMeta";
 import CommentSection from "@/components/organisms/CommentSection";
 import { showSnackbar } from "@/services/snackbar/snackbar.slice";
-import type { ArticleComment } from "@/types/comments.types";
 import { getErrorMessage } from "@/utils/getErrorMessage";
 import { CircularProgress, Container, Stack, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useGetArticleByDocumentIdQuery } from "@/services/article/article.api";
+import {
+  useCreateCommentMutation,
+  useDeleteCommentMutation,
+  useGetCommentsByArticleQuery,
+  useUpdateCommentMutation,
+} from "@/services/comment/comment.api";
+
 const DetailsArticle = () => {
   const dispatch = useDispatch();
   const { documentId } = useParams<{ documentId: string }>();
 
-  const { data, isLoading, isError, error } = useGetArticleByDocumentIdQuery(
-    documentId!,
-    { skip: !documentId }
+  const {
+    data: articleRes,
+    isLoading: articleLoading,
+    isError: articleError,
+    error: articleErr,
+  } = useGetArticleByDocumentIdQuery(documentId!, {
+    skip: !documentId,
+  });
+
+  const article = articleRes?.data;
+
+  const {
+    data: commentsRes,
+    isError: commentsError,
+    error: commentsErr,
+    refetch: refetchComments,
+  } = useGetCommentsByArticleQuery(
+    { articleId: article?.id as number },
+    {
+      skip: !article?.id,
+    }
   );
 
-  const [comments, setComments] = useState<ArticleComment[]>([]);
+  const comments = commentsRes?.data ?? [];
+
+  const [createComment, { isLoading: creatingComment }] =
+    useCreateCommentMutation();
+
+  const [updateComment, { isLoading: updatingComment }] =
+    useUpdateCommentMutation();
+
+  const [deleteComment, { isLoading: deletingComment }] =
+    useDeleteCommentMutation();
 
   useEffect(() => {
-    if (isError && error) {
+    if (articleError && articleErr) {
       dispatch(
         showSnackbar({
-          message: getErrorMessage(error),
+          message: getErrorMessage(articleErr),
           severity: "error",
           context: "main",
         })
       );
     }
-  }, [isError, error, dispatch]);
 
-  if (isLoading) {
+    if (commentsError && commentsErr) {
+      dispatch(
+        showSnackbar({
+          message: getErrorMessage(commentsErr),
+          severity: "error",
+          context: "main",
+        })
+      );
+    }
+  }, [articleError, articleErr, commentsError, commentsErr, dispatch]);
+
+  if (articleLoading) {
     return (
       <Container maxWidth="lg">
         <Stack alignItems="center" py={6}>
@@ -42,17 +85,93 @@ const DetailsArticle = () => {
     );
   }
 
-  if (isError || !data) {
+  if (!article) {
     return (
       <Container maxWidth="lg">
         <Stack alignItems="center" py={6}>
-          Failed to load details
+          Failed to load article
         </Stack>
       </Container>
     );
   }
 
-  const article = data.data;
+  const handleCreateComment = async (value: string) => {
+    try {
+      await createComment({
+        articleId: article.id,
+        content: value,
+      }).unwrap();
+
+      refetchComments();
+
+      dispatch(
+        showSnackbar({
+          message: "Comment added successfully",
+          severity: "success",
+          context: "main",
+        })
+      );
+    } catch (err) {
+      dispatch(
+        showSnackbar({
+          message: getErrorMessage(err),
+          severity: "error",
+          context: "main",
+        })
+      );
+    }
+  };
+
+  const handleUpdateComment = async (documentId: string, value: string) => {
+    try {
+      await updateComment({
+        documentId,
+        content: value,
+      }).unwrap();
+
+      refetchComments();
+
+      dispatch(
+        showSnackbar({
+          message: "Comment updated",
+          severity: "success",
+          context: "main",
+        })
+      );
+    } catch (err) {
+      dispatch(
+        showSnackbar({
+          message: getErrorMessage(err),
+          severity: "error",
+          context: "main",
+        })
+      );
+    }
+  };
+
+  const handleDeleteComment = async (documentId: string) => {
+    try {
+      await deleteComment({ documentId }).unwrap();
+
+      refetchComments();
+
+      dispatch(
+        showSnackbar({
+          message: "Comment deleted",
+          severity: "success",
+          context: "main",
+        })
+      );
+    } catch (err) {
+      dispatch(
+        showSnackbar({
+          message: getErrorMessage(err),
+          severity: "error",
+          context: "main",
+        })
+      );
+    }
+  };
 
   return (
     <Container maxWidth="lg">
@@ -70,23 +189,11 @@ const DetailsArticle = () => {
         />
         <CommentSection
           comments={comments}
-          onCreate={(value) =>
-            setComments((p) => [
-              {
-                id: crypto.randomUUID(),
-                author: "Dhea Fesa Athallah",
-                content: value,
-                createdAt: new Date().toISOString(),
-              },
-              ...p,
-            ])
-          }
-          onUpdate={(id, value) =>
-            setComments((p) =>
-              p.map((c) => (c.id === id ? { ...c, content: value } : c))
-            )
-          }
-          onDelete={(id) => setComments((p) => p.filter((c) => c.id !== id))}
+          loadingSubmit={creatingComment || updatingComment}
+          loadingDelete={deletingComment}
+          onCreate={handleCreateComment}
+          onUpdate={handleUpdateComment}
+          onDelete={handleDeleteComment}
         />
       </Stack>
     </Container>
