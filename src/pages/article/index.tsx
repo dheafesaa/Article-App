@@ -2,9 +2,13 @@ import Heading from "@/components/molecules/Heading";
 import RoundedPagination from "@/components/molecules/RoundedPagination";
 import { SearchInput } from "@/components/molecules/SearchInput";
 import ArticleList from "@/components/organisms/ArticleList";
-import { Container, Stack } from "@mui/material";
-import { useMemo, useState } from "react";
+import { CircularProgress, Container, Stack } from "@mui/material";
+import { useEffect, useState } from "react";
 import ArticleToolbar from "@/components/organisms/ArticleToolbar";
+import { useDispatch } from "react-redux";
+import { useGetArticlesQuery } from "@/services/article/article.api";
+import { showSnackbar } from "@/services/snackbar/snackbar.slice";
+import { getErrorMessage } from "@/utils/getErrorMessage";
 
 const categories = [
   { id: "all", label: "All Categories" },
@@ -13,48 +17,37 @@ const categories = [
   { id: "bogor", label: "Wisata Bogor" },
 ];
 
-const allArticles = [
-  {
-    image: "/src/assets/mansory1.jpg",
-    title: "Title of the article",
-    documentId: "123456",
-    description: "Description ...............",
-    publishedAt: "Dec 24, 2025",
-    commentCount: 2,
-  },
-  {
-    image: "/src/assets/mansory1.jpg",
-    title: "Another article",
-    documentId: "09876",
-    description: "Description ...............",
-    publishedAt: "Dec 24, 2025",
-    commentCount: 5,
-  },
-];
-
 const Article = () => {
+  const dispatch = useDispatch();
   const [query, setQuery] = useState("");
   const [active, setActive] = useState("all");
   const [page, setPage] = useState(1);
 
-  const ITEMS_PER_PAGE = 25;
-
-  const filteredArticles = useMemo(() => {
-    return allArticles.filter((item) => {
-      const matchQuery = item.title.toLowerCase().includes(query.toLowerCase());
-
-      const matchCategory = active === "all";
-
-      return matchQuery && matchCategory;
-    });
-  }, [allArticles, query, active]);
-
-  const totalPages = Math.ceil(filteredArticles.length / ITEMS_PER_PAGE);
-
-  const paginatedArticles = filteredArticles.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
+  const { data, isLoading, isError, error } = useGetArticlesQuery(
+    {
+      page,
+      pageSize: 10,
+      search: query || undefined,
+      category: active !== "all" ? active : undefined,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
   );
+
+  useEffect(() => {
+    if (isError && error) {
+      dispatch(
+        showSnackbar({
+          message: getErrorMessage(error),
+          severity: "error",
+          context: "main",
+        })
+      );
+    }
+  }, [isError, error, dispatch]);
+
+  const pagination = data?.meta.pagination;
 
   return (
     <Container maxWidth="lg">
@@ -64,7 +57,13 @@ const Article = () => {
             title="Stories From Every Place"
             description="Travel stories made from places moments and words worth keeping."
           />
-          <SearchInput value={query} onChange={setQuery} />
+          <SearchInput
+            value={query}
+            onChange={(val) => {
+              setQuery(val);
+              setPage(1);
+            }}
+          />
         </Stack>
         <ArticleToolbar
           categories={categories}
@@ -75,11 +74,29 @@ const Article = () => {
             setPage(1);
           }}
         />
-        <ArticleList items={paginatedArticles} />
-        {totalPages > 1 && (
+        {isLoading ? (
+          <Stack alignItems="center" py={6}>
+            <CircularProgress />
+          </Stack>
+        ) : (
+          <ArticleList
+            items={
+              data?.data.map((item) => ({
+                image: item.cover_image_url,
+                title: item.title,
+                documentId: item.documentId,
+                description: item.description,
+                publishedAt: item.publishedAt,
+                commentCount: item.comments.length,
+              })) ?? []
+            }
+          />
+        )}
+
+        {pagination && pagination.pageCount > 1 && (
           <RoundedPagination
-            page={page}
-            count={totalPages}
+            page={pagination.page}
+            count={pagination.pageCount}
             onChange={setPage}
           />
         )}
