@@ -62,3 +62,8 @@ export interface ArticleListResponse {
     pagination: Pagination;
   };
 }
+
+export interface ArticleDetailResponse {
+  data: Article;
+  meta: Record<string, never>;
+}

@@ -1,44 +1,72 @@
 import ArticleContent from "@/components/organisms/ArticleContent";
 import ArticleMeta from "@/components/organisms/ArticleMeta";
 import CommentSection from "@/components/organisms/CommentSection";
+import { showSnackbar } from "@/services/snackbar/snackbar.slice";
 import type { ArticleComment } from "@/types/comments.types";
-import { Container, Stack, Typography } from "@mui/material";
-import { useState } from "react";
-// import { useParams } from "react-router-dom";
-
+import { getErrorMessage } from "@/utils/getErrorMessage";
+import { CircularProgress, Container, Stack, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { useParams } from "react-router-dom";
+import { useGetArticleByDocumentIdQuery } from "@/services/article/article.api";
 const DetailsArticle = () => {
-  // const { documentId } = useParams();
-  const [comments, setComments] = useState<ArticleComment[]>([
-    {
-      id: "c1",
-      author: "Dhea Fesa Athallah",
-      content: "Good",
-      createdAt: "Dec 24, 2025",
-    },
-    {
-      id: "c2",
-      author: "Dhea Fesa Athallah",
-      content:
-        "This is an excellent post. I completed an executive MBA and can relate to your perspective on this.",
-      createdAt: "Dec 24, 2025",
-    },
-  ]);
+  const dispatch = useDispatch();
+  const { documentId } = useParams<{ documentId: string }>();
+
+  const { data, isLoading, isError, error } = useGetArticleByDocumentIdQuery(
+    documentId!,
+    { skip: !documentId }
+  );
+
+  const [comments, setComments] = useState<ArticleComment[]>([]);
+
+  useEffect(() => {
+    if (isError && error) {
+      dispatch(
+        showSnackbar({
+          message: getErrorMessage(error),
+          severity: "error",
+          context: "main",
+        })
+      );
+    }
+  }, [isError, error, dispatch]);
+
+  if (isLoading) {
+    return (
+      <Container maxWidth="lg">
+        <Stack alignItems="center" py={6}>
+          <CircularProgress />
+        </Stack>
+      </Container>
+    );
+  }
+
+  if (isError || !data) {
+    return (
+      <Container maxWidth="lg">
+        <Stack alignItems="center" py={6}>
+          Failed to load details
+        </Stack>
+      </Container>
+    );
+  }
+
+  const article = data.data;
 
   return (
     <Container maxWidth="lg">
       <Stack spacing={4} py={3}>
-        <Typography variant="h3">
-          Indonesia to Host ASEAN Climate Summit 2025
-        </Typography>
+        <Typography variant="h3">{article.title}</Typography>
         <ArticleMeta
-          authorName="Dhea Fesa Athallah"
-          publishedAt="Dec 24, 2025"
-          readTime="7 min read"
-          commentCount={2}
+          authorName={article.documentId}
+          publishedAt={article.publishedAt}
+          commentCount={comments.length}
+          readTime="5 min read"
         />
         <ArticleContent
-          image="/src/assets/mansory1.jpg"
-          content={`Traveling is a transformative journey that extends far beyond the mere act of moving between geographical locations; it is an exploration of both the world and the self. By stepping out of our comfort zones and immersing ourselves in diverse cultures, breathtaking landscapes, and unfamiliar traditions, we gain a broader perspective that fosters empathy and global understanding. Whether it is the thrill of a new adventure or the serenity of a quiet escape, travel breaks the monotony of daily life and enriches the soul with priceless memories and stories. Ultimately, every trip we take serves as a powerful catalyst for personal growth, leaving an indelible mark on our identity and how we perceive the world around us.`}
+          image={article.cover_image_url}
+          content={article.description}
         />
         <CommentSection
           comments={comments}
@@ -48,7 +76,7 @@ const DetailsArticle = () => {
                 id: crypto.randomUUID(),
                 author: "Dhea Fesa Athallah",
                 content: value,
-                createdAt: "Dec 24, 2025",
+                createdAt: new Date().toISOString(),
               },
               ...p,
             ])

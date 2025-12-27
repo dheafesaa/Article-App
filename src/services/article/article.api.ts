@@ -1,5 +1,8 @@
 import { api } from "@/store/api";
-import type { ArticleListResponse } from "@/types/article.types";
+import type {
+  ArticleDetailResponse,
+  ArticleListResponse,
+} from "@/types/article.types";
 
 export interface GetArticlesParams {
   page: number;
@@ -32,7 +35,14 @@ export const articleApi = api.injectEndpoints({
         };
       },
     }),
+    getArticleByDocumentId: builder.query<ArticleDetailResponse, string>({
+      query: (documentId) => ({
+        url: `/articles/${documentId}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-export const { useGetArticlesQuery } = articleApi;
+export const { useGetArticlesQuery, useGetArticleByDocumentIdQuery } =
+  articleApi;
