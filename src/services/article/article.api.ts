@@ -60,6 +60,12 @@ export const articleApi = api.injectEndpoints({
         },
       }),
     }),
+    deleteArticle: builder.mutation<void, { documentId: string }>({
+      query: ({ documentId }) => ({
+        url: `/articles/${documentId}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
@@ -68,4 +74,5 @@ export const {
   useGetArticleByDocumentIdQuery,
   useCreateArticleMutation,
   useUpdateArticleMutation,
+  useDeleteArticleMutation,
 } = articleApi;

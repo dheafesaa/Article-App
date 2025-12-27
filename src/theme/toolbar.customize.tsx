@@ -22,3 +22,18 @@ export const articleToolbarButtonSx: SxProps<Theme> = {
     md: "auto",
   },
 };
+
+export const articleCTASx: SxProps<Theme> = {
+  display: "flex",
+  alignItems: {
+    xs: "stretch",
+    md: "center",
+  },
+  justifyContent: "space-between",
+  gap: 2,
+
+  flexDirection: {
+    xs: "column",
+    md: "row",
+  },
+};

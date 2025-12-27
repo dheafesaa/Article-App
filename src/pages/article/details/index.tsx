@@ -11,10 +11,13 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { NavLink, useParams } from "react-router-dom";
-import { useGetArticleByDocumentIdQuery } from "@/services/article/article.api";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
+import {
+  useDeleteArticleMutation,
+  useGetArticleByDocumentIdQuery,
+} from "@/services/article/article.api";
 import {
   useCreateCommentMutation,
   useDeleteCommentMutation,
@@ -22,11 +25,13 @@ import {
   useUpdateCommentMutation,
 } from "@/services/comment/comment.api";
 import { CTAButtonSx } from "@/theme/button.customize";
-import { articleToolbarSx } from "@/theme/toolbar.customize";
+import { articleCTASx, articleToolbarSx } from "@/theme/toolbar.customize";
 import { formatDate } from "@/utils/formatDate";
+import ArticleDialog from "@/components/molecules/ArticleDialog";
 
 const DetailsArticle = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { documentId } = useParams<{ documentId: string }>();
 
   const {
@@ -84,6 +89,35 @@ const DetailsArticle = () => {
       );
     }
   }, [articleError, articleErr, commentsError, commentsErr, dispatch]);
+
+  const [openDelete, setOpenDelete] = useState(false);
+
+  const [deleteArticle, { isLoading: deletingArticle }] =
+    useDeleteArticleMutation();
+
+  const handleDeleteArticle = async () => {
+    try {
+      await deleteArticle({ documentId: documentId! }).unwrap();
+
+      dispatch(
+        showSnackbar({
+          message: "Article deleted successfully",
+          severity: "success",
+          context: "main",
+        })
+      );
+
+      navigate("/article", { replace: true });
+    } catch (err) {
+      dispatch(
+        showSnackbar({
+          message: getErrorMessage(err),
+          severity: "error",
+          context: "main",
+        })
+      );
+    }
+  };
 
   if (articleLoading) {
     return (
@@ -188,15 +222,25 @@ const DetailsArticle = () => {
       <Stack spacing={4} py={3}>
         <Box sx={articleToolbarSx}>
           <Typography variant="h3">{article.title}</Typography>
-          <Button
-            component={NavLink}
-            variant="contained"
-            type="submit"
-            to={`/article/edit/${documentId}`}
-            sx={CTAButtonSx}
-          >
-            Edit
-          </Button>
+          <Box sx={articleCTASx}>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => setOpenDelete(true)}
+              sx={CTAButtonSx}
+            >
+              Delete
+            </Button>
+            <Button
+              component={NavLink}
+              variant="contained"
+              type="submit"
+              to={`/article/edit/${documentId}`}
+              sx={CTAButtonSx}
+            >
+              Edit
+            </Button>
+          </Box>
         </Box>
         <ArticleMeta
           authorName={article.documentId}
@@ -217,6 +261,15 @@ const DetailsArticle = () => {
           onDelete={handleDeleteComment}
         />
       </Stack>
+      <ArticleDialog
+        open={openDelete}
+        title="Delete Article"
+        description="Are you sure you want to delete this article? This action cannot be undone."
+        confirmText="Delete"
+        loading={deletingArticle}
+        onClose={() => setOpenDelete(false)}
+        onConfirm={handleDeleteArticle}
+      />
     </Container>
   );
 };
