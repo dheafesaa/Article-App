@@ -38,6 +38,12 @@ export const categoryApi = api.injectEndpoints({
         method: "DELETE",
       }),
     }),
+    getCategoryByDocumentId: builder.query<{ data: Category }, string>({
+      query: (documentId) => ({
+        url: `/categories/${documentId}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -46,4 +52,5 @@ export const {
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
+  useGetCategoryByDocumentIdQuery,
 } = categoryApi;

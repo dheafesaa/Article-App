@@ -2,7 +2,7 @@ import { api } from "@/store/api";
 import type {
   ArticleDetailResponse,
   ArticleListResponse,
-  CreateArticleRequest,
+  ArticleRequest,
 } from "@/types/article.types";
 
 export interface GetArticlesParams {
@@ -38,19 +38,28 @@ export const articleApi = api.injectEndpoints({
     }),
     getArticleByDocumentId: builder.query<ArticleDetailResponse, string>({
       query: (documentId) => ({
-        url: `/articles/${documentId}`,
+        url: `/articles/${documentId}?populate=category`,
         method: "GET",
       }),
     }),
-    createArticle: builder.mutation<
-      ArticleDetailResponse,
-      CreateArticleRequest
-    >({
+    createArticle: builder.mutation<ArticleDetailResponse, ArticleRequest>({
       query: (body) => ({
         url: "/articles",
         method: "POST",
         body: {
           data: body,
+        },
+      }),
+    }),
+    updateArticle: builder.mutation<
+      ArticleDetailResponse,
+      { documentId: string; data: ArticleRequest }
+    >({
+      query: ({ documentId, data }) => ({
+        url: `/articles/${documentId}`,
+        method: "PUT",
+        body: {
+          data,
         },
       }),
     }),
@@ -61,4 +70,5 @@ export const {
   useGetArticlesQuery,
   useGetArticleByDocumentIdQuery,
   useCreateArticleMutation,
+  useUpdateArticleMutation,
 } = articleApi;

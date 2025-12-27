@@ -53,9 +53,11 @@ export interface ArticleDetailResponse {
   meta: Record<string, never>;
 }
 
-export interface CreateArticleRequest {
+export interface ArticleRequest {
   title: string;
   description: string;
   cover_image_url: string;
-  category: number | string;
+  category: {
+    connect: string[];
+  };
 }

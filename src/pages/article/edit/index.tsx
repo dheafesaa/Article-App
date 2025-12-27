@@ -1,4 +1,6 @@
 import TextField from "@/components/atoms/TextField";
+import TextArea from "@/components/atoms/TextArea";
+import CategorySelect from "@/components/molecules/CategorySelect";
 import {
   Container,
   FormControl,
@@ -7,11 +9,10 @@ import {
   Grid,
   Box,
   Button,
+  CircularProgress,
 } from "@mui/material";
-import TextArea from "@/components/atoms/TextArea";
-import CategorySelect from "@/components/molecules/CategorySelect";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { CTAButtonSx, CTAButtonTextSx } from "@/theme/button.customize";
 import {
   createArticleSchema,
@@ -20,28 +21,52 @@ import {
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDispatch } from "react-redux";
-import { useCreateArticleMutation } from "@/services/article/article.api";
+import {
+  useGetArticleByDocumentIdQuery,
+  useUpdateArticleMutation,
+} from "@/services/article/article.api";
+import {
+  useGetCategoriesQuery,
+  useGetCategoryByDocumentIdQuery,
+  useCreateCategoryMutation,
+  useUpdateCategoryMutation,
+  useDeleteCategoryMutation,
+} from "@/services/category/category.api";
 import { showSnackbar } from "@/services/snackbar/snackbar.slice";
 import { getErrorMessage } from "@/utils/getErrorMessage";
+import { useEffect, useMemo } from "react";
 import type { CategoryItem } from "@/components/molecules/CategoryDialog";
-import {
-  useCreateCategoryMutation,
-  useDeleteCategoryMutation,
-  useGetCategoriesQuery,
-  useUpdateCategoryMutation,
-} from "@/services/category/category.api";
-import { useMemo } from "react";
+import { skipToken } from "@reduxjs/toolkit/query";
 
-const CreateArticle = () => {
+const EditArticle = () => {
+  const { documentId } = useParams<{ documentId: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const [createArticle, { isLoading }] = useCreateArticleMutation();
+  const { data: articleRes, isLoading: articleLoading } =
+    useGetArticleByDocumentIdQuery(documentId!, { skip: !documentId });
+
+  const article = articleRes?.data;
+  const categoryDocumentId = article?.category?.documentId;
+
+  const { data: categoryDetail } = useGetCategoryByDocumentIdQuery(
+    categoryDocumentId ?? skipToken
+  );
+
   const {
     data: categoryRes,
     isLoading: categoryLoading,
     refetch: refetchCategories,
   } = useGetCategoriesQuery();
+
+  const categories: CategoryItem[] = useMemo(
+    () =>
+      categoryRes?.data.map((c) => ({
+        id: c.documentId,
+        name: c.name,
+      })) ?? [],
+    [categoryRes?.data]
+  );
 
   const [createCategory, { isLoading: creatingCategory }] =
     useCreateCategoryMutation();
@@ -50,15 +75,22 @@ const CreateArticle = () => {
   const [deleteCategory, { isLoading: deletingCategory }] =
     useDeleteCategoryMutation();
 
+  const [updateArticle, { isLoading: updatingArticle }] =
+    useUpdateArticleMutation();
+
   const {
     register,
     handleSubmit,
+    reset,
     setValue,
     control,
     formState: { errors },
   } = useForm<CreateArticleSchema>({
     resolver: zodResolver(createArticleSchema),
     defaultValues: {
+      title: "",
+      description: "",
+      cover_image_url: "",
       category: "",
     },
   });
@@ -68,32 +100,39 @@ const CreateArticle = () => {
     name: "category",
   });
 
-  const categories: CategoryItem[] = useMemo(() => {
-    return (
-      categoryRes?.data.map((c) => ({
-        id: c.documentId,
-        name: c.name,
-      })) ?? []
-    );
-  }, [categoryRes?.data]);
+  const selectedCategory = useMemo(() => {
+    if (!selectedCategoryId) return null;
+    return categories.find((c) => c.id === selectedCategoryId) ?? null;
+  }, [selectedCategoryId, categories]);
 
-  const selectedCategory = selectedCategoryId
-    ? categories.find((c) => c.id === selectedCategoryId) ?? null
-    : null;
+  useEffect(() => {
+    if (!article) return;
+    if (!categoryDetail) return;
+
+    reset({
+      title: article.title,
+      description: article.description,
+      cover_image_url: article.cover_image_url,
+      category: categoryDetail.data.documentId,
+    });
+  }, [article, categoryDetail, reset]);
 
   const onSubmit = async (values: CreateArticleSchema) => {
-    const payload = {
-      ...values,
-      category: {
-        connect: [values.category],
-      },
-    };
-
     try {
-      await createArticle(payload).unwrap();
+      await updateArticle({
+        documentId: documentId!,
+        data: {
+          title: values.title,
+          description: values.description,
+          cover_image_url: values.cover_image_url,
+          category: {
+            connect: [values.category],
+          },
+        },
+      }).unwrap();
       dispatch(
         showSnackbar({
-          message: "Article published successfully",
+          message: "Article updated successfully",
           severity: "success",
           context: "main",
         })
@@ -110,11 +149,18 @@ const CreateArticle = () => {
     }
   };
 
+  if (articleLoading || categoryLoading) {
+    return (
+      <Box display="flex" justifyContent="center" py={8}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Container maxWidth="lg">
       <Stack
         component="form"
-        noValidate
         spacing={3}
         py={4}
         onSubmit={handleSubmit(onSubmit)}
@@ -131,10 +177,10 @@ const CreateArticle = () => {
           <Button
             variant="contained"
             type="submit"
-            loading={isLoading}
+            loading={updatingArticle}
             sx={CTAButtonSx}
           >
-            Publish
+            Update
           </Button>
         </Box>
         <Grid container spacing={3}>
@@ -142,7 +188,6 @@ const CreateArticle = () => {
             <FormControl fullWidth>
               <FormLabel>Title</FormLabel>
               <TextField
-                placeholder="Summertime"
                 {...register("title")}
                 error={!!errors.title}
                 helperText={errors.title?.message}
@@ -156,41 +201,19 @@ const CreateArticle = () => {
                 value={selectedCategory}
                 options={categories}
                 loading={
-                  categoryLoading ||
-                  creatingCategory ||
-                  updatingCategory ||
-                  deletingCategory
+                  creatingCategory || updatingCategory || deletingCategory
                 }
                 error={!!errors.category}
                 helperText={errors.category?.message}
-                onChange={(val) => {
-                  setValue("category", val?.id ?? "", {
+                onChange={(v) =>
+                  setValue("category", v?.id ?? "", { shouldValidate: true })
+                }
+                onCreate={async (name) => {
+                  const res = await createCategory({ name }).unwrap();
+                  await refetchCategories();
+                  setValue("category", res.data.documentId, {
                     shouldValidate: true,
                   });
-                }}
-                onCreate={async (name) => {
-                  try {
-                    const res = await createCategory({ name }).unwrap();
-                    setValue("category", res.data.documentId, {
-                      shouldValidate: true,
-                    });
-                    await refetchCategories();
-                    dispatch(
-                      showSnackbar({
-                        message: "Category created",
-                        severity: "success",
-                        context: "main",
-                      })
-                    );
-                  } catch (err) {
-                    dispatch(
-                      showSnackbar({
-                        message: getErrorMessage(err),
-                        severity: "error",
-                        context: "main",
-                      })
-                    );
-                  }
                 }}
                 onUpdate={async (category) => {
                   await updateCategory({
@@ -202,28 +225,11 @@ const CreateArticle = () => {
                     shouldValidate: true,
                   });
                 }}
-                onDelete={async (documentId) => {
-                  try {
-                    await deleteCategory({ documentId }).unwrap();
-                    await refetchCategories();
-                    if (selectedCategoryId === documentId) {
-                      setValue("category", "", { shouldValidate: true });
-                    }
-                    dispatch(
-                      showSnackbar({
-                        message: "Category deleted",
-                        severity: "success",
-                        context: "main",
-                      })
-                    );
-                  } catch (err) {
-                    dispatch(
-                      showSnackbar({
-                        message: getErrorMessage(err),
-                        severity: "error",
-                        context: "main",
-                      })
-                    );
+                onDelete={async (docId) => {
+                  await deleteCategory({ documentId: docId }).unwrap();
+                  await refetchCategories();
+                  if (selectedCategoryId === docId) {
+                    setValue("category", "", { shouldValidate: true });
                   }
                 }}
               />
@@ -233,7 +239,6 @@ const CreateArticle = () => {
         <FormControl fullWidth>
           <FormLabel>Cover Image</FormLabel>
           <TextField
-            placeholder="https://example.com/image.jpg"
             {...register("cover_image_url")}
             error={!!errors.cover_image_url}
             helperText={errors.cover_image_url?.message}
@@ -244,7 +249,6 @@ const CreateArticle = () => {
           <TextArea
             {...register("description")}
             minRows={10}
-            placeholder="Write something..."
             error={!!errors.description}
             helperText={errors.description?.message}
           />
@@ -254,4 +258,4 @@ const CreateArticle = () => {
   );
 };
 
-export default CreateArticle;
+export default EditArticle;

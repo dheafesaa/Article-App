@@ -3,10 +3,17 @@ import ArticleMeta from "@/components/organisms/ArticleMeta";
 import CommentSection from "@/components/organisms/CommentSection";
 import { showSnackbar } from "@/services/snackbar/snackbar.slice";
 import { getErrorMessage } from "@/utils/getErrorMessage";
-import { CircularProgress, Container, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { useParams } from "react-router-dom";
+import { NavLink, useParams } from "react-router-dom";
 import { useGetArticleByDocumentIdQuery } from "@/services/article/article.api";
 import {
   useCreateCommentMutation,
@@ -14,6 +21,8 @@ import {
   useGetCommentsByArticleQuery,
   useUpdateCommentMutation,
 } from "@/services/comment/comment.api";
+import { CTAButtonSx } from "@/theme/button.customize";
+import { articleToolbarSx } from "@/theme/toolbar.customize";
 
 const DetailsArticle = () => {
   const dispatch = useDispatch();
@@ -176,7 +185,18 @@ const DetailsArticle = () => {
   return (
     <Container maxWidth="lg">
       <Stack spacing={4} py={3}>
-        <Typography variant="h3">{article.title}</Typography>
+        <Box sx={articleToolbarSx}>
+          <Typography variant="h3">{article.title}</Typography>
+          <Button
+            component={NavLink}
+            variant="contained"
+            type="submit"
+            to={`/article/edit/${documentId}`}
+            sx={CTAButtonSx}
+          >
+            Edit
+          </Button>
+        </Box>
         <ArticleMeta
           authorName={article.documentId}
           publishedAt={article.publishedAt}
