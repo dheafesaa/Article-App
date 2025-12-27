@@ -16,20 +16,17 @@ export const articleApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getArticles: builder.query<ArticleListResponse, GetArticlesParams>({
       query: ({ page, pageSize, search, category }) => {
-        const params = new URLSearchParams({
-          "pagination[page]": String(page),
-          "pagination[pageSize]": String(pageSize),
-          populate: "*",
-        });
-
+        const params = new URLSearchParams();
+        params.append("pagination[page]", String(page));
+        params.append("pagination[pageSize]", String(pageSize));
+        params.append("populate", "*");
+        params.append("sort", "publishedAt:desc");
         if (search) {
           params.append("filters[title][$containsi]", search);
         }
-
         if (category && category !== "all") {
           params.append("filters[category][documentId][$eq]", category);
         }
-
         return {
           url: `/articles?${params.toString()}`,
           method: "GET",

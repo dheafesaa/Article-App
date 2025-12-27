@@ -6,6 +6,7 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import LinkIcon from "@mui/icons-material/Link";
 import Avatar from "@/components/atoms/Avatar";
 import Tooltip from "@/components/atoms/Tooltip";
+import { formatDate } from "@/utils/formatDate";
 
 interface ArticleMetaProps {
   authorName: string;
@@ -33,7 +34,7 @@ const ArticleMeta = ({
         <Stack>
           <Typography fontWeight={600}>{authorName}</Typography>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="caption">{publishedAt}</Typography>
+            <Typography variant="caption">{formatDate(publishedAt)}</Typography>
             <Box
               sx={{
                 width: 6,

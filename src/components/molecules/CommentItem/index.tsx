@@ -5,6 +5,7 @@ import { useState } from "react";
 import CommentEditor from "@/components/molecules/CommentEditor";
 import Avatar from "@/components/atoms/Avatar";
 import type { Comment } from "@/types/comment.types";
+import { formatDate } from "@/utils/formatDate";
 
 interface Props {
   comment: Comment;
@@ -29,7 +30,9 @@ const CommentItem = ({
         <Avatar name={comment.documentId} size={40} />
         <Stack spacing={0.5} flex={1}>
           <Typography fontWeight={600}>{comment.documentId}</Typography>
-          <Typography variant="caption">{comment.createdAt}</Typography>
+          <Typography variant="caption">
+            {formatDate(comment.createdAt)}
+          </Typography>
           {!editing ? (
             <Typography>{comment.content}</Typography>
           ) : (

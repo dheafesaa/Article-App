@@ -9,6 +9,7 @@ import { useDispatch } from "react-redux";
 import { useGetArticlesQuery } from "@/services/article/article.api";
 import { showSnackbar } from "@/services/snackbar/snackbar.slice";
 import { getErrorMessage } from "@/utils/getErrorMessage";
+import { formatDate } from "@/utils/formatDate";
 
 const categories = [
   { id: "all", label: "All Categories" },
@@ -86,7 +87,7 @@ const Article = () => {
                 title: item.title,
                 documentId: item.documentId,
                 description: item.description,
-                publishedAt: item.publishedAt,
+                publishedAt: formatDate(item.publishedAt),
                 commentCount: item.comments?.length ?? 0,
               })) ?? []
             }

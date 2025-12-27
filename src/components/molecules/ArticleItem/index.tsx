@@ -36,7 +36,9 @@ const ArticleItem = ({
       <CardContent>
         <Stack spacing={1}>
           <Typography variant="caption">{documentId}</Typography>
-          <Typography variant="h4">{title}</Typography>
+          <Typography variant="h4" noWrap>
+            {title}
+          </Typography>
           <Typography noWrap>{description}</Typography>
           <Box
             sx={{

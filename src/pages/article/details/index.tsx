@@ -23,6 +23,7 @@ import {
 } from "@/services/comment/comment.api";
 import { CTAButtonSx } from "@/theme/button.customize";
 import { articleToolbarSx } from "@/theme/toolbar.customize";
+import { formatDate } from "@/utils/formatDate";
 
 const DetailsArticle = () => {
   const dispatch = useDispatch();
@@ -199,7 +200,7 @@ const DetailsArticle = () => {
         </Box>
         <ArticleMeta
           authorName={article.documentId}
-          publishedAt={article.publishedAt}
+          publishedAt={formatDate(article.publishedAt)}
           commentCount={comments.length}
           readTime="5 min read"
         />
