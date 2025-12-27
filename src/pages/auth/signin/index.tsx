@@ -15,8 +15,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signInSchema } from "@/schemas/auth.schema";
 import type { SignInSchema } from "@/schemas/auth.schema";
 import ArticleAppLogo from "@/assets/article-app.png";
+import { useSignInMutation } from "@/services/auth/auth.api";
+import { useDispatch } from "react-redux";
+import { setAuth } from "@/services/auth/auth.slice";
+import { useNavigate } from "react-router-dom";
+import { showSnackbar } from "@/services/snackbar/snackbar.slice";
+import { getErrorMessage } from "@/utils/getErrorMessage";
 
 const SignIn = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [signIn, { isLoading }] = useSignInMutation();
+
   const {
     register,
     handleSubmit,
@@ -25,15 +35,42 @@ const SignIn = () => {
     resolver: zodResolver(signInSchema),
   });
 
-  const onSubmit = (data: SignInSchema) => {
-    console.log(data);
+  const onSubmit = async (data: SignInSchema) => {
+    try {
+      const res = await signIn({
+        identifier: data.email,
+        password: data.password,
+      }).unwrap();
+
+      localStorage.setItem("token", res.jwt);
+      localStorage.setItem("user", JSON.stringify(res.user));
+
+      dispatch(setAuth(res.user));
+
+      dispatch(
+        showSnackbar({
+          message: "Login successful",
+          severity: "success",
+        })
+      );
+
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 4000);
+    } catch (error: unknown) {
+      dispatch(
+        showSnackbar({
+          message: getErrorMessage(error),
+          severity: "error",
+        })
+      );
+    }
   };
 
   return (
     <Card sx={CardAuth}>
       <Logo src={ArticleAppLogo} name="Depscape" />
       <Typography variant="h3">Sign In</Typography>
-
       <Box
         component="form"
         noValidate
@@ -54,7 +91,6 @@ const SignIn = () => {
             helperText={errors.email?.message}
           />
         </FormControl>
-
         <FormControl>
           <FormLabel>Password</FormLabel>
           <TextField
@@ -63,13 +99,18 @@ const SignIn = () => {
             {...register("password")}
             error={!!errors.password}
             helperText={errors.password?.message}
+            isPassword
           />
         </FormControl>
-
-        <Button type="submit" fullWidth variant="contained">
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          disabled={isLoading}
+          loading={isLoading}
+        >
           Sign in
         </Button>
-
         <Typography textAlign="center">
           Don&apos;t have an account? <Link href="/sign-up">Sign up</Link>
         </Typography>

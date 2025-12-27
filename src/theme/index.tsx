@@ -137,6 +137,9 @@ const theme = createTheme({
 
     MuiButton: {
       styleOverrides: {
+        loadingIndicator: ({ ownerState }) => ({
+          color: ownerState.variant === "contained" ? "#fff" : "inherit",
+        }),
         root: {
           textTransform: "none",
           fontSize: "0.875rem",
@@ -208,6 +211,21 @@ const theme = createTheme({
 
           "&.Mui-disabled": {
             color: theme.palette.action.disabled,
+          },
+        }),
+      },
+    },
+
+    MuiAlert: {
+      styleOverrides: {
+        filledSuccess: {
+          backgroundColor: "#4CAF50",
+        },
+        root: ({ theme }) => ({
+          color: theme.palette.common.white,
+
+          "& .MuiSvgIcon-root": {
+            color: theme.palette.common.white,
           },
         }),
       },
