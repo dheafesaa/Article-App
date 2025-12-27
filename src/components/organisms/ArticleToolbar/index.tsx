@@ -24,7 +24,7 @@ const ArticleToolbar = ({
   activeId,
   onCategoryChange,
   labelButton,
-  path = "/new-article",
+  path = "/article/new",
 }: ArticleToolbarProps) => {
   return (
     <Box sx={articleToolbarSx}>

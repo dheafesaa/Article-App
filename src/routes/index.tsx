@@ -16,9 +16,9 @@ const AppRoutes = () => {
         <Route element={<MainLayout />}>
           <Route path="/*" element={<HomePage />} />
           <Route path="/article" element={<Article />} />
+          <Route path="/article/new" element={<CreateArticle />} />
           <Route path="/article/:documentId" element={<DetailsArticle />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/new-article" element={<CreateArticle />} />
         </Route>
 
         <Route element={<AuthLayout />}>

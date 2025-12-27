@@ -1,25 +1,5 @@
 import { z } from "zod";
 
-/* ================= ARTICLE ================= */
-
-export const ArticleSchema = z.object({
-  id: z.number(),
-  documentId: z.string(),
-  title: z.string(),
-  description: z.string(),
-  cover_image_url: z.string().url(),
-  publishedAt: z.string(),
-});
-
-export type Article = z.infer<typeof ArticleSchema>;
-
-export const ArticleDetailResponseSchema = z.object({
-  data: ArticleSchema,
-  meta: z.object({}).optional(),
-});
-
-/* ================= COMMENTS ================= */
-
 export const CommentSchema = z.object({
   id: z.number(),
   documentId: z.string(),

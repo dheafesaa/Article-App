@@ -4,6 +4,7 @@ import {
   IconButton,
   Stack,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -21,6 +22,9 @@ interface Props {
   onCreate?: (name: string) => void;
   onUpdate?: (c: CategoryItem) => void;
   onDelete?: (id: string) => void;
+  loading?: boolean;
+  error?: boolean;
+  helperText?: string;
 }
 
 const CategorySelect = ({
@@ -30,6 +34,9 @@ const CategorySelect = ({
   onCreate,
   onUpdate,
   onDelete,
+  loading = false,
+  error = false,
+  helperText,
 }: Props) => {
   const [inputValue, setInputValue] = useState("");
   const [dialog, setDialog] = useState<{
@@ -46,6 +53,7 @@ const CategorySelect = ({
   return (
     <>
       <Autocomplete
+        loading={loading}
         value={value}
         inputValue={inputValue}
         onInputChange={(_, v) => setInputValue(v)}
@@ -78,12 +86,15 @@ const CategorySelect = ({
         renderInput={(params) => (
           <TextField
             {...params}
+            error={error}
+            helperText={helperText}
             placeholder="Select category"
             slotProps={{
               input: {
                 ...params.InputProps,
                 endAdornment: (
                   <Stack direction="row" spacing={0.5} alignItems="center">
+                    {loading && <CircularProgress color="inherit" size={16} />}
                     {value && (
                       <>
                         {onUpdate && (

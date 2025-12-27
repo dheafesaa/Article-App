@@ -87,7 +87,7 @@ const Article = () => {
                 documentId: item.documentId,
                 description: item.description,
                 publishedAt: item.publishedAt,
-                commentCount: item.comments.length,
+                commentCount: item.comments?.length ?? 0,
               })) ?? []
             }
           />

@@ -2,6 +2,7 @@ import { api } from "@/store/api";
 import type {
   ArticleDetailResponse,
   ArticleListResponse,
+  CreateArticleRequest,
 } from "@/types/article.types";
 
 export interface GetArticlesParams {
@@ -41,8 +42,23 @@ export const articleApi = api.injectEndpoints({
         method: "GET",
       }),
     }),
+    createArticle: builder.mutation<
+      ArticleDetailResponse,
+      CreateArticleRequest
+    >({
+      query: (body) => ({
+        url: "/articles",
+        method: "POST",
+        body: {
+          data: body,
+        },
+      }),
+    }),
   }),
 });
 
-export const { useGetArticlesQuery, useGetArticleByDocumentIdQuery } =
-  articleApi;
+export const {
+  useGetArticlesQuery,
+  useGetArticleByDocumentIdQuery,
+  useCreateArticleMutation,
+} = articleApi;

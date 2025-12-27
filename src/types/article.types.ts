@@ -1,52 +1,37 @@
-export interface ArticleUser {
+export interface BaseEntity {
   id: number;
   documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+  locale: string | null;
+}
+
+export interface ArticleUser extends BaseEntity {
   username: string;
   email: string;
   provider: string;
   confirmed: boolean;
   blocked: boolean;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt: string;
-  locale: string | null;
 }
 
-export interface ArticleCategory {
-  id: number;
-  documentId: string;
+export interface ArticleCategory extends BaseEntity {
   name: string;
   description: string;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt: string;
-  locale: string | null;
 }
 
-export interface ArticleComment {
-  id: number;
-  documentId: string;
+export interface ArticleComment extends BaseEntity {
   content: string;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt: string;
-  locale: string | null;
 }
 
-export interface Article {
-  id: number;
-  documentId: string;
+export interface Article extends BaseEntity {
   title: string;
   description: string;
   cover_image_url: string;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt: string;
-  locale: string | null;
-  user: ArticleUser;
+  user?: ArticleUser;
   category: ArticleCategory | null;
-  comments: ArticleComment[];
-  localizations: unknown[];
+  comments?: ArticleComment[];
+  localizations?: unknown[];
 }
 
 export interface Pagination {
@@ -66,4 +51,11 @@ export interface ArticleListResponse {
 export interface ArticleDetailResponse {
   data: Article;
   meta: Record<string, never>;
+}
+
+export interface CreateArticleRequest {
+  title: string;
+  description: string;
+  cover_image_url: string;
+  category: number | string;
 }
