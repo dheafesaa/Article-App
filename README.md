@@ -1,73 +1,55 @@
-# React + TypeScript + Vite
+# 📰 Travel Article App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern web-based **Travel Article App** built with React, TypeScript, and Vite, designed for scalability, clean architecture, and maintainable UI using Material UI and Atomic Design principles. This application allows users to create, view, filter, and manage articles and categories with a responsive and consistent user experience.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Features
 
-## React Compiler
+- Article listing with pagination
+- Create, edit, and delete articles
+- Category management (CRUD via dialog)
+- Form validation using schema-based approach
+- Global snackbar & error handling
+- Responsive layout with Material UI
+- Clean and scalable project structure
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+--- 
 
-## Expanding the ESLint configuration
+## 🛠 Tech Stack
+⚛️ **Core Frontend** 
+- ReactJS — Component-based UI architecture
+- TypeScript — Type-safe development & better maintainability
+- Vite — Lightning-fast dev server & build tool
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+🎨 **UI & Styling**
+- Material UI (MUI) — Consistent and accessible UI components
+- MUI Theme & SX — Centralized design system
+- CSS-in-JS — Scoped and maintainable styling
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+🔄 **State & Data Management**
+- Redux Toolkit — Predictable global state management
+- RTK Query — API fetching, caching, and synchronization
+- React Router DOM — Client-side routing
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+🧪 **Forms & Validation**
+- React Hook Form — Performant form handling
+- Zod — Schema-based validation with TypeScript inference
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+🧰 **Tooling & Quality**
+- ESLint — Code linting & consistency
+- Prettier — Automatic code formatting
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🧠 Architecture Decisions
+- **Atomic Design** → predictable UI scaling
+- **RTK Query** → standardized API handling & caching
+- **Zod + React Hook Form** → schema-driven validation
+- **Feature-based services** → easier maintenance
+- **Centralized theme** → consistent UI/UX
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+## 👤 Author
+**Dhea Fesa Athallah** | Frontend Engineer — React & TypeScript
