@@ -1,9 +1,13 @@
 import { api } from "@/store/api";
-import type { SignInRequest, SignInResponse } from "@/types/auth.types";
+import type {
+  SignInRequest,
+  SignUpRequest,
+  AuthResponse,
+} from "@/types/auth.types";
 
 export const authApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    signIn: builder.mutation<SignInResponse, SignInRequest>({
+    signIn: builder.mutation<AuthResponse, SignInRequest>({
       query: ({ identifier, password }) => ({
         url: "/auth/local",
         method: "POST",
@@ -16,7 +20,21 @@ export const authApi = api.injectEndpoints({
         },
       }),
     }),
+    signUp: builder.mutation<AuthResponse, SignUpRequest>({
+      query: ({ username, email, password }) => ({
+        url: "/auth/local/register",
+        method: "POST",
+        body: new URLSearchParams({
+          username,
+          email,
+          password,
+        }),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }),
+    }),
   }),
 });
 
-export const { useSignInMutation } = authApi;
+export const { useSignInMutation, useSignUpMutation } = authApi;

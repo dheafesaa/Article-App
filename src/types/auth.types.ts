@@ -3,6 +3,12 @@ export interface SignInRequest {
   password: string;
 }
 
+export interface SignUpRequest {
+  username: string;
+  email: string;
+  password: string;
+}
+
 export interface AuthUser {
   id: number;
   documentId: string;
@@ -17,7 +23,7 @@ export interface AuthUser {
   locale: string | null;
 }
 
-export interface SignInResponse {
+export interface AuthResponse {
   jwt: string;
   user: AuthUser;
 }
