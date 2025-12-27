@@ -5,6 +5,10 @@ import StoryPrompt from "@/components/organisms/StoryPrompt";
 import { Container, Stack } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import NarrativeImage from "@/assets/narrative.png";
+import Mansory1Image from "@/assets/mansory1.jpg";
+import Mansory2Image from "@/assets/mansory2.jpg";
+import Mansory3Image from "@/assets/mansory3.jpg";
+import Mansory4Image from "@/assets/mansory4.jpg";
 import FeatureHighlights from "@/components/organisms/FeatureHighlights";
 
 const Home = () => {
@@ -21,19 +25,19 @@ const Home = () => {
           images={{
             left: {
               id: "1",
-              src: "/src/assets/mansory1.jpg",
+              src: Mansory1Image,
             },
             centerTop: {
               id: "2",
-              src: "/src/assets/mansory2.jpg",
+              src: Mansory2Image,
             },
             centerBottom: {
               id: "3",
-              src: "/src/assets/mansory3.jpg",
+              src: Mansory3Image,
             },
             right: {
               id: "4",
-              src: "/src/assets/mansory4.jpg",
+              src: Mansory4Image,
             },
           }}
         />
